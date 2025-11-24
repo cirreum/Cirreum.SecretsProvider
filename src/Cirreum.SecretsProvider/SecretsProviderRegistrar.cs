@@ -21,7 +21,7 @@ public abstract class SecretsProviderRegistrar<TSettings, TInstanceSettings>
 	private static readonly Dictionary<string, string> processedInstances = [];
 
 	/// <inheritdoc/>
-	public abstract ProviderType ProviderType { get; }
+	public ProviderType ProviderType => ProviderType.Secrets;
 
 	/// <inheritdoc/>
 	public abstract string ProviderName { get; }
