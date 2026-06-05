@@ -15,6 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Cirreum.Providers` `1.1.1` → `1.2.1`
   - `Microsoft.Extensions.Hosting.Abstractions` `10.0.7` → `10.0.8`
 
-## [1.0.9]
+## [1.0.17]
 
-Baseline release. Prior history predates this changelog.
+Baseline entry. Prior history predates this changelog.
