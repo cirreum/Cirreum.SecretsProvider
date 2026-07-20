@@ -18,8 +18,6 @@ public abstract class SecretsProviderRegistrar<TSettings, TInstanceSettings>
 	where TInstanceSettings : SecretsProviderInstanceSettings
 	where TSettings : SecretsProviderSettings<TInstanceSettings> {
 
-	private static readonly Dictionary<string, string> processedInstances = [];
-
 	/// <inheritdoc/>
 	public ProviderType ProviderType => ProviderType.Secrets;
 
@@ -107,11 +105,15 @@ public abstract class SecretsProviderRegistrar<TSettings, TInstanceSettings>
 		IServiceCollection services,
 		IConfigurationBuilder builder) {
 
-		// Ensure no duplicate registration keys
+		// Ensure no duplicate registration keys. State is scoped to this service
+		// collection — it lives in the composition, not the process, so multiple hosts
+		// in one process are isolated.
 		var providerRegistrationKey = $"Cirreum.{this.ProviderType}.{this.ProviderName}::{key}";
-		if (!processedInstances.TryAdd(providerRegistrationKey, settings.Endpoint)) {
+		if (services.Any(d => d.ImplementationInstance is ProcessedRegistrationKey processed
+			&& processed.Value == providerRegistrationKey)) {
 			throw new InvalidOperationException($"A service with the key of '{key}' has already been registered.");
 		}
+		services.AddSingleton(new ProcessedRegistrationKey(providerRegistrationKey));
 
 		// Must have settings...
 		if (settings is null) {
@@ -127,7 +129,7 @@ public abstract class SecretsProviderRegistrar<TSettings, TInstanceSettings>
 		}
 
 		// Validate Endpoint regardless of provider specific validation
-		settings.ValidateEndpoint(key, this.ProviderType, this.ProviderName);
+		settings.ValidateEndpoint(key, services, this.ProviderType, this.ProviderName);
 
 		// Provider specific validation...
 		this.ValidateSettings(settings);

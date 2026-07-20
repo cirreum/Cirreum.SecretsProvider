@@ -1,6 +1,7 @@
-﻿namespace Cirreum.SecretsProvider.Configuration;
+namespace Cirreum.SecretsProvider.Configuration;
 
-using System.Collections.Generic;
+using Cirreum.SecretsProvider;
+using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Provides extension methods for validating secrets provider instance settings.
@@ -11,25 +12,29 @@ using System.Collections.Generic;
 /// </remarks>
 public static class SettingValidationExtensions {
 
-	private static readonly Dictionary<string, string> processedEndpoints = [];
-
 	/// <summary>
-	/// Validates that the endpoint is properly configured and not already registered by another instance.
+	/// Validates that the endpoint is properly configured and not already registered by another
+	/// instance in this composition.
 	/// </summary>
 	/// <param name="settings">The instance settings containing the endpoint to validate.</param>
 	/// <param name="key">The unique key identifying this provider instance.</param>
+	/// <param name="services">The service collection the instance is being registered into.</param>
 	/// <param name="providerServiceType">The type of provider service being registered.</param>
 	/// <param name="providerServiceName">The name of the provider service being registered.</param>
 	/// <exception cref="InvalidOperationException">
-	/// Thrown when the endpoint is missing, cannot be resolved, or has already been registered by another instance.
+	/// Thrown when the endpoint is missing, cannot be resolved, or has already been registered by
+	/// another instance in this composition.
 	/// </exception>
 	/// <remarks>
-	/// This method ensures endpoint uniqueness by creating a SHA256 hash of the endpoint string
-	/// and tracking it in a static dictionary to prevent duplicate registrations across provider instances.
+	/// Endpoint uniqueness is enforced on a SHA256 hash of the endpoint string, so duplicate
+	/// detection never exposes the endpoint value in error messages. Uniqueness is scoped to the
+	/// service collection — the state lives in the composition, not the process, so multiple
+	/// hosts in one process are isolated.
 	/// </remarks>
 	public static void ValidateEndpoint(
 		this SecretsProviderInstanceSettings settings,
 		string key,
+		IServiceCollection services,
 		ProviderType providerServiceType,
 		string providerServiceName) {
 
@@ -48,10 +53,12 @@ public static class SettingValidationExtensions {
 
 		var endpointKey = $"Cirreum.{providerServiceType}.{providerServiceName}.Connections:{endpointHash}";
 
-		if (!processedEndpoints.TryAdd(endpointKey, key)) {
+		if (services.Any(d => d.ImplementationInstance is ProcessedRegistrationKey processed
+			&& processed.Value == endpointKey)) {
 			throw new InvalidOperationException(
 				$"An endpoint string for service instance '{key}' has already been configured. Cannot register the same endpoint with multiple instances.");
 		}
+		services.AddSingleton(new ProcessedRegistrationKey(endpointKey));
 
 	}
 
