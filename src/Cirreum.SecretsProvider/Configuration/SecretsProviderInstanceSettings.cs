@@ -24,6 +24,12 @@ public class SecretsProviderInstanceSettings
 	public string Endpoint { get; set; } = "";
 
 	/// <summary>
+	/// Optional identity-based credential configuration, used when the instance authenticates
+	/// with a platform identity rather than a connection string or key.
+	/// </summary>
+	public CredentialSettings? Credential { get; set; }
+
+	/// <summary>
 	/// Allow the implementor the opportunity to parse the <see cref="Endpoint"/> value.
 	/// </summary>
 	/// <remarks>

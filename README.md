@@ -35,6 +35,17 @@ Flexible configuration models that support provider-specific settings while main
 - **Hierarchical settings** - Provider-level settings with instance-specific overrides
 - **OpenTelemetry integration** - Built-in tracing support for observability
 - **Configuration binding** - Seamless integration with .NET configuration system
+- **Identity-based credentials** - Optional nested `Credential` block per instance (`Mode`: `Default` / `ManagedIdentity` / `Developer`, plus optional `IdentityId`) for providers that authenticate with a platform identity rather than a connection string or key; identity-capable implementations map it to their platform's credential types, key-only implementations ignore it
+
+```json
+"Instances": {
+  "default": {
+    "Endpoint": "<provider endpoint>",
+    "Identifier": "<optional provider-interpreted id>",
+    "Credential": { "Mode": "ManagedIdentity", "IdentityId": "<platform identity id>" }
+  }
+}
+```
 
 ### Usage Example
 

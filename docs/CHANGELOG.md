@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Credential` on `SecretsProviderInstanceSettings` — optional identity-based credential
+  configuration, surfaced as a nested `Credential` block (`Mode`: `Default` / `ManagedIdentity` /
+  `Developer`, plus optional `IdentityId`) using the shared `CredentialSettings` taxonomy from
+  `Cirreum.Providers` 1.3.0. Nullable by design: absent means the implementation's default
+  credential behavior, and implementations can distinguish configured-from-not (e.g. to fail fast
+  on contradictory settings). Identity-capable providers consume it; key-only providers ignore it.
+
+### Updated
+
+- Updated NuGet packages.
+
 ## [1.0.22] - 2026-07-20
 
 ### Fixed
